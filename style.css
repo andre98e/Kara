@@ -30,7 +30,10 @@ body {
 }
 
 /* Typography & Glitch */
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     font-family: var(--font-heading);
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -61,7 +64,8 @@ h1, h2, h3, h4 {
     letter-spacing: 4px;
 }
 
-.glitch::before, .glitch::after {
+.glitch::before,
+.glitch::after {
     content: attr(data-text);
     position: absolute;
     top: 0;
@@ -86,31 +90,95 @@ h1, h2, h3, h4 {
 }
 
 @keyframes glitch-anim {
-    0% { clip: rect(10px, 9999px, 86px, 0); }
-    10% { clip: rect(65px, 9999px, 8.5px, 0); }
-    20% { clip: rect(77px, 9999px, 88px, 0); }
-    30% { clip: rect(4px, 9999px, 12px, 0); }
-    40% { clip: rect(45px, 9999px, 80px, 0); }
-    50% { clip: rect(22px, 9999px, 3.5px, 0); }
-    60% { clip: rect(51px, 9999px, 98px, 0); }
-    70% { clip: rect(28px, 9999px, 7px, 0); }
-    80% { clip: rect(40px, 9999px, 49px, 0); }
-    90% { clip: rect(88px, 9999px, 11px, 0); }
-    100% { clip: rect(32px, 9999px, 39px, 0); }
+    0% {
+        clip: rect(10px, 9999px, 86px, 0);
+    }
+
+    10% {
+        clip: rect(65px, 9999px, 8.5px, 0);
+    }
+
+    20% {
+        clip: rect(77px, 9999px, 88px, 0);
+    }
+
+    30% {
+        clip: rect(4px, 9999px, 12px, 0);
+    }
+
+    40% {
+        clip: rect(45px, 9999px, 80px, 0);
+    }
+
+    50% {
+        clip: rect(22px, 9999px, 3.5px, 0);
+    }
+
+    60% {
+        clip: rect(51px, 9999px, 98px, 0);
+    }
+
+    70% {
+        clip: rect(28px, 9999px, 7px, 0);
+    }
+
+    80% {
+        clip: rect(40px, 9999px, 49px, 0);
+    }
+
+    90% {
+        clip: rect(88px, 9999px, 11px, 0);
+    }
+
+    100% {
+        clip: rect(32px, 9999px, 39px, 0);
+    }
 }
 
 @keyframes glitch-anim-2 {
-    0% { clip: rect(65px, 9999px, 100px, 0); }
-    10% { clip: rect(52px, 9999px, 74px, 0); }
-    20% { clip: rect(79px, 9999px, 85px, 0); }
-    30% { clip: rect(75px, 9999px, 5px, 0); }
-    40% { clip: rect(45px, 9999px, 58px, 0); }
-    50% { clip: rect(25px, 9999px, 63px, 0); }
-    60% { clip: rect(79px, 9999px, 66px, 0); }
-    70% { clip: rect(81px, 9999px, 18px, 0); }
-    80% { clip: rect(25px, 9999px, 20px, 0); }
-    90% { clip: rect(26px, 9999px, 8px, 0); }
-    100% { clip: rect(54px, 9999px, 32px, 0); }
+    0% {
+        clip: rect(65px, 9999px, 100px, 0);
+    }
+
+    10% {
+        clip: rect(52px, 9999px, 74px, 0);
+    }
+
+    20% {
+        clip: rect(79px, 9999px, 85px, 0);
+    }
+
+    30% {
+        clip: rect(75px, 9999px, 5px, 0);
+    }
+
+    40% {
+        clip: rect(45px, 9999px, 58px, 0);
+    }
+
+    50% {
+        clip: rect(25px, 9999px, 63px, 0);
+    }
+
+    60% {
+        clip: rect(79px, 9999px, 66px, 0);
+    }
+
+    70% {
+        clip: rect(81px, 9999px, 18px, 0);
+    }
+
+    80% {
+        clip: rect(25px, 9999px, 20px, 0);
+    }
+
+    90% {
+        clip: rect(26px, 9999px, 8px, 0);
+    }
+
+    100% {
+        clip: rect(54px, 9999px, 32px, 0);
+    }
 }
 
 /* Layout */
@@ -188,8 +256,15 @@ h1, h2, h3, h4 {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Forms */
@@ -217,7 +292,8 @@ label {
     letter-spacing: 1px;
 }
 
-input[type="text"], select {
+input[type="text"],
+select {
     width: 100%;
     padding: 1rem;
     background-color: var(--surface-alt);
@@ -229,7 +305,8 @@ input[type="text"], select {
     transition: all 0.2s ease;
 }
 
-input[type="text"]:focus, select:focus {
+input[type="text"]:focus,
+select:focus {
     outline: none;
     border-color: var(--accent-purple);
     box-shadow: 0 0 0 2px rgba(157, 78, 221, 0.2);
@@ -240,6 +317,7 @@ input[type="text"]:focus, select:focus {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--border-color);
 }
+
 .songs-desc {
     color: var(--text-secondary);
     font-size: 0.9rem;
@@ -264,7 +342,10 @@ input[type="text"]:focus, select:focus {
 .song-entry::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; width: 4px; height: 100%;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
     background-color: var(--accent-purple);
     transform: scaleY(0);
     transition: transform 0.3s ease;
@@ -275,6 +356,7 @@ input[type="text"]:focus, select:focus {
     transform: scaleY(1);
     background-color: var(--accent-red);
 }
+
 .song-entry:focus-within {
     border-left-color: transparent;
 }
@@ -290,8 +372,9 @@ input[type="text"]:focus, select:focus {
 /* Custom styles for Priority 1 */
 .song-entry[data-priority="1"] {
     border-left-color: var(--accent-red);
-    background: linear-gradient(135deg, rgba(255,0,60,0.05) 0%, transparent 100%);
+    background: linear-gradient(135deg, rgba(255, 0, 60, 0.05) 0%, transparent 100%);
 }
+
 .song-entry[data-priority="1"] h4 {
     color: var(--accent-red);
 }
@@ -347,6 +430,7 @@ input[type="text"]:focus, select:focus {
     border-color: rgba(255, 0, 60, 0.3);
     color: var(--accent-red);
 }
+
 .btn-danger:hover {
     background-color: var(--accent-red);
     color: white;
@@ -371,7 +455,7 @@ input[type="text"]:focus, select:focus {
 
 .user-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     border-color: #3f3f46;
 }
 
@@ -411,6 +495,7 @@ input[type="text"]:focus, select:focus {
     align-items: center;
     gap: 1rem;
 }
+
 .user-songs li:last-child {
     border-bottom: none;
 }
@@ -425,6 +510,7 @@ input[type="text"]:focus, select:focus {
     font-weight: 600;
     color: var(--text-primary);
 }
+
 .song-title {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -442,8 +528,8 @@ input[type="text"]:focus, select:focus {
 
 .priority-badge.p-1 {
     color: var(--accent-red);
-    border-color: rgba(255,0,60,0.3);
-    background: rgba(255,0,60,0.05);
+    border-color: rgba(255, 0, 60, 0.3);
+    background: rgba(255, 0, 60, 0.05);
 }
 
 .selected-song-control {
@@ -487,24 +573,59 @@ input[type="text"]:focus, select:focus {
 
 .noise {
     position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAMDAwMDAwMDAwMDAwMDAwMDAzE1K9dAAAAB3RSTlMAAAAAAABUp2/fAAAARElEQVQ4jWNgGAWjYBSMglEwCkbBKBgFsIxgMAg0c0CQEEQzMBhEcwDCAoA0H4QFAIk/CAsAUh8QFgCkHzgKRsEoIAEAWVwE8T+z8ZAAAAAASUVORK5CYII=);
     opacity: 0.05;
     animation: noise 0.2s infinite;
 }
 
 @keyframes noise {
-    0% { transform: translate(0, 0); }
-    10% { transform: translate(-5px, 5px); }
-    20% { transform: translate(-10px, -5px); }
-    30% { transform: translate(5px, -10px); }
-    40% { transform: translate(-5px, 15px); }
-    50% { transform: translate(-10px, 5px); }
-    60% { transform: translate(15px, 0); }
-    70% { transform: translate(0, 10px); }
-    80% { transform: translate(-15px, 0); }
-    90% { transform: translate(10px, 5px); }
-    100% { transform: translate(5px, 0); }
+    0% {
+        transform: translate(0, 0);
+    }
+
+    10% {
+        transform: translate(-5px, 5px);
+    }
+
+    20% {
+        transform: translate(-10px, -5px);
+    }
+
+    30% {
+        transform: translate(5px, -10px);
+    }
+
+    40% {
+        transform: translate(-5px, 15px);
+    }
+
+    50% {
+        transform: translate(-10px, 5px);
+    }
+
+    60% {
+        transform: translate(15px, 0);
+    }
+
+    70% {
+        transform: translate(0, 10px);
+    }
+
+    80% {
+        transform: translate(-15px, 0);
+    }
+
+    90% {
+        transform: translate(10px, 5px);
+    }
+
+    100% {
+        transform: translate(5px, 0);
+    }
 }
 
 #sorteo-animation .glitch-text {
@@ -548,7 +669,9 @@ input[type="text"]:focus, select:focus {
 .queue-item::before {
     content: '';
     position: absolute;
-    left: 0; top: 0; bottom: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 6px;
     background: linear-gradient(to bottom, var(--accent-red), var(--accent-purple));
 }
@@ -599,20 +722,66 @@ input[type="text"]:focus, select:focus {
     .song-entry {
         grid-template-columns: 1fr;
     }
+
     .queue-item {
         flex-direction: column;
         align-items: flex-start;
         padding: 1.5rem;
     }
+
     .queue-code {
         margin-top: 1rem;
         align-self: flex-end;
     }
+
     .queue-number {
         font-size: 2rem;
         margin-right: 1rem;
         position: absolute;
-        top: 1rem; right: 1rem;
+        top: 1rem;
+        right: 1rem;
         min-width: auto;
     }
+}
+
+/* Modal Edit Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    padding: 1rem;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    border: 1px solid var(--accent-purple);
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(157, 78, 221, 0.3);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: var(--surface-color);
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: var(--accent-purple);
+    border-radius: 4px;
 }

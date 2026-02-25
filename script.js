@@ -45,6 +45,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const sorteoResults = document.getElementById('sorteo-results');
     const queueList = document.getElementById('queue-list');
 
+    // Edición (Inyectado dinámicamente para no tocar el HTML base)
+    if (!document.getElementById('edit-modal')) {
+        const modalHTML = `
+        <div id="edit-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="section-header">
+                    <h2>EDITAR ALMA</h2>
+                    <p>Modifica el nombre y sus canciones.</p>
+                </div>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group main-input">
+                        <label for="edit-user-name">Nombre del Cantante</label>
+                        <input type="text" id="edit-user-name" required>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-top: 2rem;">
+                        <h3 class="songs-title" style="margin-top:0; border-bottom:none; padding-bottom:0;">Sus Canciones</h3>
+                        <button type="button" id="btn-add-song" class="btn-small" style="color:var(--accent-purple); border-color:var(--accent-purple); display:none;">+ AÑADIR</button>
+                    </div>
+
+                    <div id="edit-songs-container">
+                        <!-- Generado por JS -->
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="btn-primary btn-danger" id="close-edit-modal" style="flex: 1;">CANCELAR</button>
+                        <button type="submit" class="btn-primary" style="flex: 1; margin-top: 0;">GUARDAR CAMBIOS</button>
+                    </div>
+                </form>
+            </div>
+        </div>`;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+    const closeEditModal = document.getElementById('close-edit-modal');
+    const editSongsContainer = document.getElementById('edit-songs-container');
+    const editUserName = document.getElementById('edit-user-name');
+    const editUserId = document.getElementById('edit-user-id');
+    const btnAddSong = document.getElementById('btn-add-song');
+
     // ---- INICIALIZAR INPUTS DE CANCIONES ----
     function initSongsInputs() {
         songsContainer.innerHTML = '';
@@ -243,7 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     </select>
                 </div>
 
-                <button class="btn-primary" style="margin-top: 1rem; padding: 0.8rem; font-size: 0.9rem;" onclick="window.deleteUser('${user.id}')">ELIMINAR ALMA</button>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn-primary" style="flex: 1; padding: 0.8rem; font-size: 0.9rem; margin-top: 0; border-color: var(--accent-purple); color: var(--accent-purple);" onclick="window.openEditModal('${user.id}')">✏️ EDITAR</button>
+                    <button class="btn-primary btn-danger" style="flex: 1; padding: 0.8rem; font-size: 0.9rem; margin-top: 0;" onclick="window.deleteUser('${user.id}')">❌ ELIMINAR</button>
+                </div>
             `;
 
             usersList.appendChild(card);
@@ -251,6 +297,132 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Funciones globales para botones
+    let currentEditSongsCount = 0;
+
+    function renderEditSongsInputs(songsArray) {
+        editSongsContainer.innerHTML = '';
+        currentEditSongsCount = songsArray.length;
+
+        songsArray.forEach((song, idx) => {
+            const i = idx + 1;
+            const songHTML = `
+                <div class="song-entry edit-song-entry" data-priority="${i}">
+                    <h4>Prioridad ${i} ${i === 1 ? '(Por defecto)' : ''}</h4>
+                    <div>
+                        <input type="text" class="edit-artist-input" value="${song.artist || ''}" placeholder="Artista de la canción" ${i === 1 ? 'required' : ''}>
+                    </div>
+                    <div>
+                        <input type="text" class="edit-title-input" value="${song.title || ''}" placeholder="Nombre de la canción" ${i === 1 ? 'required' : ''}>
+                    </div>
+                </div>
+            `;
+            editSongsContainer.insertAdjacentHTML('beforeend', songHTML);
+        });
+
+        btnAddSong.style.display = currentEditSongsCount < 5 ? 'block' : 'none';
+    }
+
+    window.openEditModal = function (userId) {
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        editUserId.value = user.id;
+        editUserName.value = user.name;
+
+        const songsToEdit = user.songs && user.songs.length > 0
+            ? [...user.songs].sort((a, b) => a.priority - b.priority)
+            : [{ priority: 1, artist: '', title: '' }];
+
+        renderEditSongsInputs(songsToEdit);
+
+        editModal.classList.remove('hidden');
+    };
+
+    btnAddSong.addEventListener('click', () => {
+        if (currentEditSongsCount < 5) {
+            currentEditSongsCount++;
+            const i = currentEditSongsCount;
+            const songHTML = `
+                <div class="song-entry edit-song-entry" data-priority="${i}">
+                    <h4>Prioridad ${i}</h4>
+                    <div>
+                        <input type="text" class="edit-artist-input" placeholder="Artista de la canción">
+                    </div>
+                    <div>
+                        <input type="text" class="edit-title-input" placeholder="Nombre de la canción">
+                    </div>
+                </div>
+            `;
+            editSongsContainer.insertAdjacentHTML('beforeend', songHTML);
+
+            if (currentEditSongsCount >= 5) {
+                btnAddSong.style.display = 'none';
+            }
+        }
+    });
+
+    closeEditModal.addEventListener('click', () => {
+        editModal.classList.add('hidden');
+    });
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userId = editUserId.value;
+        const name = editUserName.value.trim();
+        const user = users.find(u => u.id === userId);
+        if (!user) return;
+
+        const newSongs = [];
+        let hasValidSong = false;
+
+        const entries = editSongsContainer.querySelectorAll('.edit-song-entry');
+        entries.forEach((entry, idx) => {
+            const priority = parseInt(entry.getAttribute('data-priority')) || (idx + 1);
+            const artist = entry.querySelector('.edit-artist-input').value.trim();
+            const title = entry.querySelector('.edit-title-input').value.trim();
+
+            if (artist && title) {
+                const oldSong = user.songs ? user.songs.find(s => s.priority === priority) : null;
+                const normalizedPriority = newSongs.length + 1;
+                newSongs.push({
+                    id: oldSong ? oldSong.id : `${Date.now()}-${name}-${normalizedPriority}`,
+                    priority: normalizedPriority,
+                    artist: artist,
+                    title: title
+                });
+                hasValidSong = true;
+            }
+        });
+
+        if (!hasValidSong) {
+            alert('El abismo requiere al menos un himno. Llena la Prioridad 1.');
+            return;
+        }
+
+        let newSelectedSong = user.selectedSong;
+        const selectedStillExists = newSelectedSong && newSongs.some(s => s.artist === newSelectedSong.artist && s.title === newSelectedSong.title);
+        if (!selectedStillExists) {
+            newSelectedSong = { ...newSongs[0] };
+        }
+
+        try {
+            const btn = editForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            await updateDoc(doc(db, 'users', userId), {
+                name: name,
+                songs: newSongs,
+                selectedSong: newSelectedSong
+            });
+            editModal.classList.add('hidden');
+            btn.disabled = false;
+        } catch (error) {
+            console.error("Error al actualizar:", error);
+            alert("No se pudo actualizar el alma en el abismo.");
+            editForm.querySelector('button[type="submit"]').disabled = false;
+        }
+    });
+
     window.deleteUser = async function (userId) {
         if (confirm('¿Seguro que deseas eliminar a esta alma del registro para siempre?')) {
             try {
