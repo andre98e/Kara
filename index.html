@@ -84,6 +84,35 @@
                 </div>
             </section>
         </main>
+
+        <!-- MODAL DE EDICIÓN -->
+        <div id="edit-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <div class="section-header">
+                    <h2>EDITAR ALMA</h2>
+                    <p>Modifica el nombre y sus canciones.</p>
+                </div>
+                <form id="edit-form">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="form-group main-input">
+                        <label for="edit-user-name">Nombre del Cantante</label>
+                        <input type="text" id="edit-user-name" required>
+                    </div>
+
+                    <h3 class="songs-title">Sus Canciones</h3>
+                    <div id="edit-songs-container">
+                        <!-- Generado por JS -->
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="button" class="btn-primary btn-danger" id="close-edit-modal"
+                            style="flex: 1;">CANCELAR</button>
+                        <button type="submit" class="btn-primary" style="flex: 1; margin-top: 0;">GUARDAR
+                            CAMBIOS</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="script.js"></script>
