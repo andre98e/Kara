@@ -1,3 +1,28 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    onSnapshot,
+    doc,
+    deleteDoc,
+    updateDoc,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBdw4lYnpqQGPLgAKz936XnhV3saHF3yQU",
+    authDomain: "karaoke-b2434.firebaseapp.com",
+    projectId: "karaoke-b2434",
+    storageBucket: "karaoke-b2434.firebasestorage.app",
+    messagingSenderId: "136338036566",
+    appId: "1:136338036566:web:14a114f1f0a2eb4dc8a8f7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
 document.addEventListener('DOMContentLoaded', () => {
     // ---- ESTADO DE LA APLICACIÓN ----
     let users = [];
@@ -6,14 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ---- ELEMENTOS DEL DOM ----
     const tabs = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
-    
+
     // Registro
     const songsContainer = document.getElementById('songs-container');
     const registroForm = document.getElementById('registro-form');
-    
+
     // Visualizar
     const usersList = document.getElementById('users-list');
-    
+
     // Sortear
     const btnSortear = document.getElementById('btn-sortear');
     const sorteoAnimation = document.getElementById('sorteo-animation');
@@ -41,13 +66,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initSongsInputs();
 
+    // ---- ESCUCHAR FIREBASE EN TIEMPO REAL ----
+    const usersCol = collection(db, 'users');
+    const q = query(usersCol, orderBy('timestamp', 'asc'));
+
+    onSnapshot(q, (snapshot) => {
+        users = [];
+        let maxCodeNum = 0;
+
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            users.push({ id: docSnap.id, ...data });
+
+            if (data.code && data.code.startsWith('ALMA-')) {
+                const num = parseInt(data.code.split('-')[1]);
+                if (!isNaN(num) && num > maxCodeNum) {
+                    maxCodeNum = num;
+                }
+            }
+        });
+
+        nextUserCode = maxCodeNum + 1;
+
+        // Actualizar la vista si estamos en la pestaña VISUALIZAR
+        if (document.getElementById('visualizar').classList.contains('active')) {
+            renderUsers();
+        }
+    });
+
     // ---- CAMBIO DE PESTAÑAS ----
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             // Remover activos
             tabs.forEach(t => t.classList.remove('active'));
             tabContents.forEach(c => c.classList.remove('active'));
-            
+
             // Activar actual
             tab.classList.add('active');
             document.getElementById(tab.dataset.tab).classList.add('active');
@@ -59,9 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ---- LÓGICA DE REGISTRO ----
-    registroForm.addEventListener('submit', (e) => {
+    registroForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const name = document.getElementById('user-name').value;
         const songs = [];
         let hasValidSong = false;
@@ -69,10 +122,10 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 1; i <= 5; i++) {
             const artist = document.getElementById(`artist-${i}`).value.trim();
             const title = document.getElementById(`title-${i}`).value.trim();
-            
+
             if (artist && title) {
                 songs.push({
-                    id: `${Date.now()}-${i}`,
+                    id: `${Date.now()}-${name}-${i}`,
                     priority: i,
                     artist: artist,
                     title: title
@@ -86,37 +139,44 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const newUser = {
-            id: nextUserCode,
-            code: `ALMA-${String(nextUserCode).padStart(3, '0')}`,
-            name: name,
-            songs: songs,
-            selectedSong: { ...songs[0] } // Por defecto la de prioridad 1
-        };
-
-        users.push(newUser);
-        nextUserCode++;
-        
-        registroForm.reset();
-        
-        // Efecto visual rápido
         const btn = registroForm.querySelector('button');
-        const oldText = btn.textContent;
-        btn.textContent = '¡REGISTRADO EN LA OSCURIDAD!';
-        btn.style.backgroundColor = 'var(--accent-purple)';
-        btn.style.borderColor = 'var(--accent-purple)';
-        
-        setTimeout(() => {
-            btn.textContent = oldText;
-            btn.style.backgroundColor = '';
-            btn.style.borderColor = '';
-        }, 2000);
+        btn.disabled = true;
+
+        try {
+            const newUserCode = `ALMA-${String(nextUserCode).padStart(3, '0')}`;
+            await addDoc(collection(db, 'users'), {
+                code: newUserCode,
+                name: name,
+                songs: songs,
+                selectedSong: { ...songs[0] },
+                timestamp: Date.now()
+            });
+
+            registroForm.reset();
+
+            const oldText = btn.textContent;
+            btn.textContent = '¡REGISTRADO EN LA OSCURIDAD!';
+            btn.style.backgroundColor = 'var(--accent-purple)';
+            btn.style.borderColor = 'var(--accent-purple)';
+
+            setTimeout(() => {
+                btn.textContent = oldText;
+                btn.style.backgroundColor = '';
+                btn.style.borderColor = '';
+            }, 2000);
+        } catch (error) {
+            console.error("Error al registrar:", error);
+            alert("El abismo rechazó tu alma. (Error de conexión)");
+        } finally {
+            btn.disabled = false;
+        }
     });
 
     // ---- LÓGICA DE VISUALIZAR ----
     function getAllSongsInSystem() {
         let allSongs = [];
         users.forEach(u => {
+            if (!u.songs) return;
             u.songs.forEach(s => {
                 allSongs.push({
                     originalUserId: u.id,
@@ -141,25 +201,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'user-card';
 
-            const songsHTML = user.songs.map(song => 
+            const userSongs = user.songs || [];
+            const songsHTML = userSongs.map(song =>
                 `<li>
                     <div class="song-info">
                         <span class="song-artist">${song.artist}</span>
                         <span class="song-title">${song.title}</span>
                     </div>
                     <span class="priority-badge p-${song.priority}">P${song.priority}</span>
-                    <button class="btn-small btn-danger" onclick="deleteSong(${user.id}, '${song.id}')">X</button>
+                    <button class="btn-small btn-danger" onclick="window.deleteSong('${user.id}', '${song.id}')">X</button>
                 </li>`
             ).join('');
 
             // Generar opciones para el selector de canción (propias y de otros)
             const optionsHTML = allSongs.map(song => {
-                const isSelected = user.selectedSong && 
-                                   user.selectedSong.artist === song.artist && 
-                                   user.selectedSong.title === song.title;
+                const isSelected = user.selectedSong &&
+                    user.selectedSong.artist === song.artist &&
+                    user.selectedSong.title === song.title;
                 const ownershipText = song.originalUserId === user.id ? '(Tuya)' : `(De ${song.originalUserName})`;
-                // Usamos artist|title como value para facil parsing
-                return `<option value="${song.artist}|${song.title}" ${isSelected ? 'selected' : ''}>
+                // Usamos artista y título separados por ~~~
+                const valueSafe = `${song.artist}~~~${song.title}`;
+                return `<option value="${valueSafe}" ${isSelected ? 'selected' : ''}>
                     ${song.artist} - ${song.title} ${ownershipText}
                 </option>`;
             }).join('');
@@ -176,46 +238,64 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <div class="selected-song-control">
                     <h4>Canción elegida para cantar:</h4>
-                    <select id="select-song-${user.id}" onchange="changeSelectedSong(${user.id}, this.value)">
+                    <select onchange="window.changeSelectedSong('${user.id}', this.value)">
                         ${optionsHTML}
                     </select>
                 </div>
 
-                <button class="btn-primary" style="margin-top: 1rem; padding: 0.8rem; font-size: 0.9rem;" onclick="deleteUser(${user.id})">ELIMINAR ALMA</button>
+                <button class="btn-primary" style="margin-top: 1rem; padding: 0.8rem; font-size: 0.9rem;" onclick="window.deleteUser('${user.id}')">ELIMINAR ALMA</button>
             `;
-            
+
             usersList.appendChild(card);
         });
     }
 
-    window.deleteUser = function(userId) {
-        if(confirm('¿Seguro que deseas eliminar a esta alma del registro para siempre?')) {
-            users = users.filter(u => u.id !== userId);
-            renderUsers();
+    // Funciones globales para botones
+    window.deleteUser = async function (userId) {
+        if (confirm('¿Seguro que deseas eliminar a esta alma del registro para siempre?')) {
+            try {
+                await deleteDoc(doc(db, 'users', userId));
+            } catch (e) {
+                console.error("Error al eliminar", e);
+            }
         }
     };
 
-    window.deleteSong = function(userId, songId) {
+    window.deleteSong = async function (userId, songId) {
         const user = users.find(u => u.id === userId);
         if (user) {
             const songToDelete = user.songs.find(s => s.id === songId);
-            user.songs = user.songs.filter(s => s.id !== songId);
-            
-            // Si la canción eliminada era la que iba a cantar, asignarle otra o nada
-            if (user.selectedSong && songToDelete && 
-                user.selectedSong.artist === songToDelete.artist && 
+            const newSongs = user.songs.filter(s => s.id !== songId);
+
+            let newSelectedSong = user.selectedSong || null;
+            if (user.selectedSong && songToDelete &&
+                user.selectedSong.artist === songToDelete.artist &&
                 user.selectedSong.title === songToDelete.title) {
-                user.selectedSong = user.songs.length > 0 ? { ...user.songs[0] } : null;
+                newSelectedSong = newSongs.length > 0 ? { ...newSongs[0] } : null;
             }
-            renderUsers();
+
+            try {
+                await updateDoc(doc(db, 'users', userId), {
+                    songs: newSongs,
+                    selectedSong: newSelectedSong
+                });
+            } catch (e) {
+                console.error("Error al eliminar canción", e);
+            }
         }
     };
 
-    window.changeSelectedSong = function(userId, songValue) {
+    window.changeSelectedSong = async function (userId, songValue) {
         const user = users.find(u => u.id === userId);
         if (user) {
-            const [artist, title] = songValue.split('|');
-            user.selectedSong = { artist, title };
+            const [artist, title] = songValue.split('~~~');
+            try {
+                await updateDoc(doc(db, 'users', userId), {
+                    selectedSong: { artist, title }
+                });
+            } catch (e) {
+                console.error("Error al cambiar canción seleccionada", e);
+            }
         }
     };
 
@@ -226,42 +306,38 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Ocultar resultados, mostrar animación
         sorteoResults.classList.add('hidden');
         sorteoAnimation.classList.remove('hidden');
         btnSortear.disabled = true;
-        
-        // Cambiar texto glitch dinámicamente
+
         const glitchText = sorteoAnimation.querySelector('.glitch-text');
         const originalText = glitchText.textContent;
         let interval = setInterval(() => {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
             let randomStr = '';
-            for(let i=0; i<15; i++) {
+            for (let i = 0; i < 15; i++) {
                 randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             glitchText.textContent = randomStr;
             glitchText.setAttribute('data-text', randomStr);
         }, 100);
 
-        // Terminar animación
         setTimeout(() => {
             clearInterval(interval);
             glitchText.textContent = originalText;
             glitchText.setAttribute('data-text', originalText);
-            
+
             sorteoAnimation.classList.add('hidden');
             btnSortear.disabled = false;
             generateQueue();
             sorteoResults.classList.remove('hidden');
-            
-            // Scroll a los resultados
+
             sorteoResults.scrollIntoView({ behavior: 'smooth' });
-        }, 3000); // 3 segundos de mezcla caótica
+        }, 3000);
     });
 
     function generateQueue() {
-        // Mezclar usuarios (Fisher-Yates)
+        // Copia local para el sorteo
         let shuffled = [...users];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -272,8 +348,8 @@ document.addEventListener('DOMContentLoaded', () => {
         shuffled.forEach((user, index) => {
             const li = document.createElement('li');
             li.className = 'queue-item';
-            
-            const songDisplay = user.selectedSong 
+
+            const songDisplay = user.selectedSong
                 ? `<span style="color:var(--text-primary)">${user.selectedSong.artist}</span> - ${user.selectedSong.title}`
                 : 'Sin canción... cantará el silencio.';
 
@@ -285,11 +361,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="queue-code">${user.code}</div>
             `;
-            
-            // Animación en cascada
+
             li.style.animationDelay = `${index * 0.15}s`;
             li.style.animation = 'fadeIn 0.5s ease backwards';
-            
+
             queueList.appendChild(li);
         });
     }
